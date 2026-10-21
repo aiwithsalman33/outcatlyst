@@ -1,0 +1,158 @@
+@import "tailwindcss";
+
+/* ───────────────────────── Brand tokens ───────────────────────── */
+@theme {
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand: #1739b7;
+  --color-navy: #142a78;
+  --color-navy-950: #0c1a4d;
+  --color-bright: #2563eb;
+  --color-teal: #00d9b0;
+  --color-magenta: #f42b88;
+  --color-sun: #ffc747;
+  --color-soft: #f5f7ff;
+  --color-ink: #17213c;
+  --color-muted: #65708a;
+  --color-line: #e3e8f6;
+  --color-danger: #c0263d;
+  --color-success: #0f7a5c;
+
+  --radius-card: 1.25rem;
+  --shadow-card: 0 1px 2px rgb(20 42 120 / 0.04), 0 8px 24px -12px rgb(20 42 120 / 0.14);
+  --shadow-lift: 0 2px 4px rgb(20 42 120 / 0.05), 0 24px 48px -20px rgb(20 42 120 / 0.28);
+
+  --animate-fade-up: fade-up 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+/* ───────────────────────── Base ───────────────────────── */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-white font-sans text-ink antialiased;
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+  h1, h2, h3, h4 {
+    @apply text-ink;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  p { text-wrap: pretty; }
+  ::selection { background: rgb(37 99 235 / 0.18); }
+  :focus-visible {
+    outline: 3px solid var(--color-bright);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  body.scroll-locked, body.menu-locked { overflow: hidden; }
+}
+
+/* ───────────────────────── Components ───────────────────────── */
+@layer components {
+  .container-site {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10;
+  }
+  .section { @apply py-20 sm:py-24 lg:py-28; }
+  .section-tight { @apply py-14 sm:py-16; }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-[0.8125rem] font-semibold tracking-[0.14em] text-brand uppercase;
+  }
+  .eyebrow::before {
+    content: "";
+    @apply inline-block h-[3px] w-6 rounded-full;
+    background: linear-gradient(90deg, var(--color-teal), var(--color-bright));
+  }
+  .eyebrow-light { @apply text-teal; }
+
+  .h-display { @apply text-[2.6rem] leading-[1.05] font-extrabold sm:text-6xl lg:text-[4.5rem]; }
+  .h-page { @apply text-4xl font-bold sm:text-5xl lg:text-[3.5rem]; }
+  .h-section { @apply text-3xl font-bold sm:text-4xl lg:text-[2.75rem]; }
+  .h-card { @apply text-xl font-semibold; }
+  .lead { @apply text-lg leading-relaxed text-muted sm:text-xl; }
+
+  /* Buttons */
+  .btn-primary, .btn-secondary, .btn-light, .btn-ghost-light {
+    @apply inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-full px-6 py-3 text-[0.9375rem] font-semibold whitespace-nowrap transition duration-200 select-none disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-primary {
+    @apply bg-brand text-white shadow-[0_10px_24px_-10px_rgb(23_57_183/0.7)] hover:-translate-y-0.5 hover:bg-navy;
+  }
+  .btn-secondary {
+    @apply border border-line bg-white text-navy hover:-translate-y-0.5 hover:border-brand hover:text-brand;
+  }
+  .btn-light {
+    @apply bg-white text-navy hover:-translate-y-0.5 hover:bg-soft;
+  }
+  .btn-ghost-light {
+    @apply border border-white/30 text-white hover:border-white hover:bg-white/10;
+  }
+  .link-arrow {
+    @apply inline-flex items-center gap-1.5 font-semibold text-brand underline-offset-4 hover:underline;
+  }
+
+  /* Cards */
+  .card {
+    @apply rounded-[var(--radius-card)] border border-line bg-white shadow-[var(--shadow-card)];
+  }
+
+  /* Forms */
+  .field-label { @apply mb-1.5 block text-sm font-medium text-ink; }
+  .field-input {
+    @apply block w-full rounded-xl border border-line bg-white px-4 py-3 text-[0.9375rem] text-ink transition placeholder:text-muted/70 hover:border-[#c6cfea] focus:border-bright focus:ring-4 focus:ring-bright/15 focus:outline-none aria-[invalid=true]:border-danger aria-[invalid=true]:ring-danger/10;
+  }
+  .field-error { @apply mt-1.5 text-sm font-medium text-danger; }
+  .field-hint { @apply mt-1.5 text-xs text-muted; }
+
+  /* "To be confirmed" marker for company-supplied details */
+  .tbc {
+    @apply inline-flex items-center gap-1.5 rounded-md border border-dashed border-sun bg-sun/15 px-2 py-0.5 text-xs font-semibold text-[#7a5300];
+  }
+
+  .prose-legal { @apply max-w-3xl text-[0.975rem] text-ink; }
+  .prose-legal h2 { @apply mt-12 mb-4 text-2xl font-bold; }
+  .prose-legal h3 { @apply mt-8 mb-3 text-lg font-semibold; }
+  .prose-legal p { @apply mb-4 text-muted; }
+  .prose-legal ul { @apply mb-4 list-disc space-y-2 pl-6 text-muted; }
+  .prose-legal a { @apply font-medium text-brand underline underline-offset-4; }
+}
+
+/* Brand gradient used sparingly on dark bands */
+.bg-brand-deep {
+  background:
+    radial-gradient(60rem 30rem at 85% -10%, rgb(37 99 235 / 0.55), transparent 60%),
+    radial-gradient(40rem 24rem at -10% 110%, rgb(0 217 176 / 0.16), transparent 60%),
+    linear-gradient(160deg, #142a78 0%, #0c1a4d 100%);
+}
+.bg-soft-grid {
+  background-color: var(--color-soft);
+  background-image:
+    linear-gradient(rgb(23 57 183 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(23 57 183 / 0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+/* Native <dialog> */
+dialog.consult-dialog::backdrop {
+  background: rgb(12 26 77 / 0.6);
+  backdrop-filter: blur(4px);
+}
+dialog.consult-dialog[open] { animation: var(--animate-fade-up); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
