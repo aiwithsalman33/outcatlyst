@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { INTEREST_AREAS, USER_TYPES } from "@/lib/leads/schema";
 import { ConsentField, FormAlert, FormSuccess, Honeypot, SelectField, Spinner, TextAreaField, TextField } from "./fields";
 import { todayLocalISO, useLeadForm } from "./useLeadForm";
+import { Icon } from "@/components/ui/Icon";
 
 type Props = {
   leadSource: string;
@@ -65,7 +66,7 @@ export function ConsultationForm({ leadSource, presetInterest, program, presetKe
   const busy = status === "submitting";
   // Two columns from md up: below that, labels such as "College / Organization (optional)" wrap
   // and push inputs in neighbouring columns out of line.
-  const grid = compact ? "grid gap-x-5 gap-y-4 md:grid-cols-2" : "grid gap-x-5 gap-y-5 md:grid-cols-2";
+  const grid = compact ? "grid gap-x-4 gap-y-4 md:grid-cols-2" : "grid gap-x-5 gap-y-5 md:grid-cols-2";
 
   return (
     <form
@@ -76,29 +77,36 @@ export function ConsultationForm({ leadSource, presetInterest, program, presetKe
         e.preventDefault();
         f.submit(formRef.current);
       }}
-      className="relative space-y-5"
+      className={`relative ${compact ? "form-compact space-y-4" : "space-y-5"}`}
       aria-busy={busy}
     >
+      {compact ? (
+        <div className="hidden items-baseline justify-between gap-4 pr-14 lg:flex">
+          <h3 className="text-lg font-semibold">Your details</h3>
+          <p className="text-xs text-muted">
+            Fields marked <span className="text-danger">*</span> are required
+          </p>
+        </div>
+      ) : null}
       <div className={grid}>
         <TextField name="fullName" label="Full Name" required autoComplete="name" value={values.fullName} onChange={f.set("fullName")} error={f.errors.fullName} />
         <TextField name="email" label="Email" type="email" required autoComplete="email" inputMode="email" value={values.email} onChange={f.set("email")} error={f.errors.email} />
         <TextField name="phone" label="Phone Number" type="tel" required autoComplete="tel" inputMode="tel" value={values.phone} onChange={f.set("phone")} error={f.errors.phone} />
         <SelectField name="userType" label="I am a" required options={USER_TYPES} value={values.userType} onChange={f.set("userType")} error={f.errors.userType} />
-        <TextField name="organization" label="College / Organization" autoComplete="organization" value={values.organization} onChange={f.set("organization")} error={f.errors.organization} />
         <SelectField name="interest" label="Area of Interest" required options={INTEREST_AREAS} value={values.interest} onChange={f.set("interest")} error={f.errors.interest} />
         <DateField
-          className="md:col-span-2"
-          inputClassName="md:w-[calc(50%-0.625rem)]"
-          label={program ? "Preferred Session Date" : undefined}
+          label={program ? "Preferred Session Date" : compact ? "Preferred Date" : undefined}
+          hint={compact ? null : undefined}
           value={values.preferredDate}
           onChange={f.set("preferredDate")}
           error={f.errors.preferredDate}
         />
+        <TextField className="md:col-span-2" name="organization" label="College / Organization" autoComplete="organization" value={values.organization} onChange={f.set("organization")} error={f.errors.organization} />
         <TextAreaField
           className="md:col-span-2"
           name="message"
           label="Message"
-          rows={compact ? 3 : 4}
+          rows={3}
           placeholder="Tell us about your goals or questions."
           value={values.message}
           onChange={f.set("message")}
@@ -113,12 +121,13 @@ export function ConsultationForm({ leadSource, presetInterest, program, presetKe
         <FormAlert message={f.serverError} onRetry={() => f.submit(formRef.current)} busy={busy} />
       ) : null}
 
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-6">
-        <button type="submit" className="btn-primary w-full md:w-auto" disabled={busy}>
+      <div className="flex flex-col gap-4 border-t border-line pt-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+        <button type="submit" className="btn-primary w-full sm:w-auto" disabled={busy}>
           {busy ? (<><Spinner /> Sending…</>) : program ? "Register My Interest" : "Request My Consultation"}
         </button>
-        <p className="text-center text-xs leading-relaxed text-muted md:max-w-xs md:text-right">
-          We use your details only to respond to this request. No spam.
+        <p className="flex items-start gap-2 text-xs leading-relaxed text-muted sm:max-w-[17rem]">
+          <Icon name="shield" className="mt-px size-4 shrink-0 text-success" />
+          <span>We use your details only to respond to this request. No spam.</span>
         </p>
       </div>
       <p className="sr-only" aria-live="polite">{busy ? "Sending your request" : ""}</p>
@@ -126,13 +135,11 @@ export function ConsultationForm({ leadSource, presetInterest, program, presetKe
   );
 }
 
-type DateFieldProps = { value: string; onChange: (v: string) => void; error?: string; label?: string; className?: string; inputClassName?: string };
+type DateFieldProps = { value: string; onChange: (v: string) => void; error?: string; label?: string; hint?: string | null };
 
-export function DateField({ value, onChange, error, label = "Preferred Consultation Date", className, inputClassName }: DateFieldProps) {
+export function DateField({ value, onChange, error, label = "Preferred Consultation Date", hint = "We'll do our best to accommodate it." }: DateFieldProps) {
   return (
     <TextField
-      className={className}
-      inputClassName={inputClassName}
       name="preferredDate"
       label={label}
       type="date"
@@ -140,7 +147,7 @@ export function DateField({ value, onChange, error, label = "Preferred Consultat
       value={value}
       onChange={onChange}
       error={error}
-      hint="We'll do our best to accommodate it."
+      hint={hint ?? undefined}
     />
   );
 }

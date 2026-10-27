@@ -111,7 +111,8 @@
     @apply block w-full rounded-xl border border-line bg-white px-4 py-3 text-[0.9375rem] text-ink transition placeholder:text-muted/70 hover:border-[#c6cfea] focus:border-bright focus:ring-4 focus:ring-bright/15 focus:outline-none aria-[invalid=true]:border-danger aria-[invalid=true]:ring-danger/10;
   }
   /* Single-line controls share one height so text, select and date inputs line up across columns. */
-  .field-control { @apply h-12; }
+  .field-control { @apply h-12 py-0; }
+  .form-compact .field-control { @apply h-11; }
   .field-error { @apply mt-1.5 text-sm font-medium text-danger; }
   .field-hint { @apply mt-1.5 text-xs text-muted; }
 

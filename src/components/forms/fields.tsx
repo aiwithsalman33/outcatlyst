@@ -46,7 +46,6 @@ export function TextField({
   inputMode,
   min,
   placeholder,
-  inputClassName = "",
   ...p
 }: Base & {
   type?: "text" | "email" | "tel" | "date";
@@ -54,8 +53,6 @@ export function TextField({
   inputMode?: "text" | "email" | "tel" | "numeric";
   min?: string;
   placeholder?: string;
-  /** Extra classes for the input itself, e.g. to keep a lone field at column width. */
-  inputClassName?: string;
 }) {
   const id = useId();
   return (
@@ -76,7 +73,7 @@ export function TextField({
         min={min}
         suppressHydrationWarning
         placeholder={placeholder}
-        className={`field-input field-control ${inputClassName}`}
+        className="field-input field-control"
       />
       <Help id={id} error={p.error} hint={p.hint} />
     </div>
@@ -131,7 +128,7 @@ export function TextAreaField({ rows = 4, placeholder, ...p }: Base & { rows?: n
         aria-describedby={describedBy(id, p.error, p.hint)}
         placeholder={placeholder}
         maxLength={2000}
-        className="field-input min-h-28 resize-y"
+        className="field-input min-h-24 resize-y"
       />
       <Help id={id} error={p.error} hint={p.hint} />
     </div>

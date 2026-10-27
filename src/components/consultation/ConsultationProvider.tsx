@@ -3,12 +3,24 @@
 import { createContext, useCallback, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { ConsultationForm } from "@/components/forms/ConsultationForm";
+import { site, telHref } from "@/lib/site";
 
 /** `program` marks the request as interest in a specific program (a registration enquiry, not a booking). */
 type OpenOptions = { source?: string; interest?: string; program?: string; trigger?: HTMLElement | null };
 type Ctx = { open: (opts?: OpenOptions) => void };
 
 const ConsultationContext = createContext<Ctx | null>(null);
+
+const CONSULT_STEPS = [
+  "Share your details and what you’d like guidance on.",
+  "Our team reviews your request.",
+  "We contact you to discuss suitable next steps.",
+];
+const PROGRAM_STEPS = [
+  "Share your details and goals.",
+  "We confirm availability, session details and delivery mode.",
+  "You receive payment instructions before your session.",
+];
 
 const SESSION_KEY = "oc:consultation-auto-shown";
 const AUTO_OPEN_DELAY_MS = 1800;
@@ -102,7 +114,7 @@ export function ConsultationProvider({ children }: { children: ReactNode }) {
       {children}
       <dialog
         ref={dialogRef}
-        className="consult-dialog m-auto w-[calc(100%-1.5rem)] max-w-3xl overflow-hidden rounded-3xl bg-white p-0 text-ink shadow-2xl sm:w-[calc(100%-3rem)]"
+        className="consult-dialog m-auto w-[calc(100%-1.5rem)] max-w-5xl overflow-hidden rounded-3xl bg-white p-0 text-ink shadow-2xl sm:w-[calc(100%-3rem)]"
         aria-labelledby={titleId}
         aria-describedby={descId}
         onClose={handleClose}
@@ -111,31 +123,41 @@ export function ConsultationProvider({ children }: { children: ReactNode }) {
           if (e.target === e.currentTarget) close();
         }}
       >
-        {/* Header stays put; only the form body scrolls, so the close button is always reachable. */}
-        <div className="flex max-h-[calc(100dvh-1.5rem)] flex-col sm:max-h-[calc(100dvh-3rem)]">
-          <div className="relative shrink-0 overflow-hidden bg-brand-deep px-6 pt-7 pb-6 text-white sm:px-10 sm:pt-8 sm:pb-7">
+        {/* Brand panel beside the form on desktop, compact header above it on smaller screens.
+            Only the form panel scrolls, so the close button and title always stay in view. */}
+        <div className="relative flex max-h-[calc(100dvh-1.5rem)] flex-col sm:max-h-[calc(100dvh-3rem)] lg:flex-row">
+          <aside className="relative flex shrink-0 flex-col overflow-hidden bg-brand-deep px-6 pt-6 pb-5 text-white sm:px-8 sm:pt-7 sm:pb-6 lg:w-[21rem] lg:px-9 lg:py-10">
             <BrandShards />
-            <p className="eyebrow eyebrow-light">{program ? "Register your interest" : "Book a consultation"}</p>
-            <h2 id={titleId} className="mt-2.5 max-w-md pr-12 text-2xl font-bold text-white sm:text-[1.75rem]">
+            <p className="eyebrow eyebrow-light relative">{program ? "Register your interest" : "Book a consultation"}</p>
+            <h2 id={titleId} className="relative mt-3 pr-12 text-[1.375rem] leading-tight font-bold text-white sm:text-2xl lg:pr-0 lg:text-[1.75rem]">
               {program ?? "Let’s Build Your Career Roadmap."}
             </h2>
-            <p id={descId} className="relative mt-2.5 max-w-xl text-[0.95rem] leading-relaxed text-white/80">
+            <p id={descId} className="relative mt-3 pr-6 text-sm leading-relaxed text-white/80 sm:pr-28 lg:pr-0 lg:text-[0.9375rem]">
               {program
-                ? "Share your details and goals. This is an enquiry, not a confirmed booking — our team will contact you to confirm availability, session details and payment instructions."
+                ? "This is an enquiry, not a confirmed booking. Our team will contact you to confirm availability, session details and payment instructions."
                 : "Tell us a little about yourself. Our team can connect with you to discuss the right learning or career-development opportunities."}
             </p>
-            <button
-              type="button"
-              onClick={close}
-              className="absolute top-4 right-4 z-10 grid size-11 cursor-pointer place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
-              aria-label="Close consultation form"
-            >
-              <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                <path d="M6 6l12 12M18 6L6 18" />
-              </svg>
-            </button>
-          </div>
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-6 sm:px-10 sm:py-8">
+
+            <div className="relative mt-9 hidden lg:block">
+              <p className="text-xs font-semibold tracking-[0.14em] text-white/60 uppercase">What happens next</p>
+              <ol className="mt-4 space-y-4">
+                {(program ? PROGRAM_STEPS : CONSULT_STEPS).map((step, i) => (
+                  <li key={step} className="flex items-start gap-3 text-sm leading-snug text-white/85">
+                    <span className="grid size-6 shrink-0 place-items-center rounded-full bg-teal text-xs font-bold text-navy">{i + 1}</span>
+                    <span className="pt-0.5">{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="relative mt-auto hidden border-t border-white/15 pt-5 text-sm lg:block">
+              <p className="text-white/60">Prefer to talk?</p>
+              <a href={telHref(site.contact.phone)} className="mt-1 block font-semibold text-white hover:text-teal">{site.contact.phone}</a>
+              <a href={`mailto:${site.contact.email}`} className="mt-0.5 block break-all text-white/80 hover:text-teal">{site.contact.email}</a>
+            </div>
+          </aside>
+
+          <div data-scroll className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain px-6 py-6 sm:px-8 sm:py-7 lg:px-10 lg:py-7">
             <ConsultationForm
               compact
               leadSource={source}
@@ -145,12 +167,18 @@ export function ConsultationProvider({ children }: { children: ReactNode }) {
               onReady={onFormReady}
               onClose={close}
             />
-            <p className="mt-6 border-t border-line pt-4 text-xs leading-relaxed text-muted">
-              <strong className="font-semibold text-ink">Your privacy:</strong> we use these details only to respond to
-              your request and never sell them. See our{" "}
-              <a href="/privacy-policy" target="_blank" className="font-medium text-brand underline underline-offset-2">Privacy Policy</a>.
-            </p>
           </div>
+
+          <button
+            type="button"
+            onClick={close}
+            className="absolute top-3.5 right-3.5 z-10 grid size-11 cursor-pointer place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/20 lg:bg-soft lg:text-navy lg:hover:bg-line"
+            aria-label="Close consultation form"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
         </div>
       </dialog>
     </ConsultationContext.Provider>
@@ -160,7 +188,7 @@ export function ConsultationProvider({ children }: { children: ReactNode }) {
 /** Small decorative echo of the logo's coloured petals. */
 function BrandShards() {
   return (
-    <svg aria-hidden="true" className="pointer-events-none absolute -top-6 -right-8 h-40 w-40 opacity-90 sm:h-48 sm:w-48" viewBox="0 0 200 200">
+    <svg aria-hidden="true" className="pointer-events-none absolute -top-10 -right-12 h-36 w-36 opacity-70 sm:h-44 sm:w-44 lg:hidden" viewBox="0 0 200 200">
       <path d="M120 20 C150 8 175 18 178 48 L182 92 L118 44 Z" fill="#F42B88" opacity="0.85" />
       <path d="M48 98 C30 112 22 132 40 146 L82 168 L70 100 Z" fill="#00D9B0" opacity="0.8" />
       <path d="M180 112 L184 160 C186 182 168 194 146 188 L104 176 Z" fill="#FFC747" opacity="0.85" />
