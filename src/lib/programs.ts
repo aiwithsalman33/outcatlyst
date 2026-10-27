@@ -208,3 +208,66 @@ export const accentStyles: Record<Accent, { chip: string; bar: string; soft: str
   sun: { chip: "bg-sun/20 text-[#7a5300]", bar: "bg-sun", soft: "bg-sun/10", text: "text-[#7a5300]" },
   navy: { chip: "bg-navy/10 text-navy", bar: "bg-navy", soft: "bg-navy/5", text: "text-navy" },
 };
+
+/**
+ * Bookable session programs (e.g. the weekly bootcamp). Rendered by <FeaturedProgram />,
+ * <ProgramTopics /> and the "How it works" steps on /programs.
+ *
+ * Content rules: only set `duration`, `deliveryMode` and `nextSessionDate` once the team has
+ * confirmed them — unset values display as "To be announced". The price is per session, not a
+ * recurring subscription. Set `status: "draft"` to hide a program without deleting it.
+ */
+export type SessionProgram = {
+  id: string;
+  title: string;
+  description: string;
+  price: { amount: number; currency: "INR"; unit: "session" };
+  frequency: "weekly" | "fortnightly" | "monthly";
+  format: string;
+  audience: string;
+  topics: { title: string; body: string; icon: "compass" | "route" | "briefcase" | "target" }[];
+  /** Interest value preselected in the consultation form. Must exist in INTEREST_AREAS. */
+  registrationInterest: string;
+  duration?: string;
+  deliveryMode?: string;
+  /** ISO date (YYYY-MM-DD) once confirmed. */
+  nextSessionDate?: string;
+  status: "published" | "draft";
+};
+
+export const sessionPrograms: SessionProgram[] = [
+  {
+    id: "bootcamp",
+    title: "Career Consultation Bootcamp",
+    description:
+      "A guided career consultation experience designed to help participants explore career pathways, identify learning priorities, and create a practical action plan.",
+    price: { amount: 500, currency: "INR", unit: "session" },
+    frequency: "weekly",
+    format: "Career consultation and bootcamp session",
+    audience: "Students, freshers and early-career professionals",
+    topics: [
+      { title: "Career Direction", body: "Explore career options based on your interests, current skills, and goals.", icon: "compass" },
+      { title: "Skills and Learning Roadmap", body: "Identify relevant skills and prioritize what to learn next.", icon: "route" },
+      {
+        title: "Career Preparation",
+        body: "Discuss practical next steps for building a portfolio, improving your profile, and preparing for opportunities.",
+        icon: "briefcase",
+      },
+      { title: "Personal Action Plan", body: "Create a realistic roadmap with clear next steps after the consultation.", icon: "target" },
+    ],
+    registrationInterest: "Career Consultation Bootcamp",
+    status: "published",
+  },
+];
+
+export const publishedSessionPrograms = sessionPrograms.filter((p) => p.status === "published");
+
+export const frequencyLabels: Record<SessionProgram["frequency"], string> = {
+  weekly: "Weekly sessions",
+  fortnightly: "Fortnightly sessions",
+  monthly: "Monthly sessions",
+};
+
+export function formatPrice(price: SessionProgram["price"]) {
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency: price.currency, maximumFractionDigits: 0 }).format(price.amount);
+}

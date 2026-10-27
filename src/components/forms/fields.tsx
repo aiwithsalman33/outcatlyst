@@ -46,6 +46,7 @@ export function TextField({
   inputMode,
   min,
   placeholder,
+  inputClassName = "",
   ...p
 }: Base & {
   type?: "text" | "email" | "tel" | "date";
@@ -53,6 +54,8 @@ export function TextField({
   inputMode?: "text" | "email" | "tel" | "numeric";
   min?: string;
   placeholder?: string;
+  /** Extra classes for the input itself, e.g. to keep a lone field at column width. */
+  inputClassName?: string;
 }) {
   const id = useId();
   return (
@@ -73,7 +76,7 @@ export function TextField({
         min={min}
         suppressHydrationWarning
         placeholder={placeholder}
-        className="field-input"
+        className={`field-input field-control ${inputClassName}`}
       />
       <Help id={id} error={p.error} hint={p.hint} />
     </div>
@@ -95,7 +98,7 @@ export function SelectField({ options, ...p }: Base & { options: readonly string
           aria-required={p.required}
           aria-invalid={p.error ? true : undefined}
           aria-describedby={describedBy(id, p.error, p.hint)}
-          className="field-input appearance-none pr-10"
+          className="field-input field-control appearance-none pr-10"
         >
           <option value="">Select an option</option>
           {options.map((o) => (
@@ -128,7 +131,7 @@ export function TextAreaField({ rows = 4, placeholder, ...p }: Base & { rows?: n
         aria-describedby={describedBy(id, p.error, p.hint)}
         placeholder={placeholder}
         maxLength={2000}
-        className="field-input resize-y"
+        className="field-input min-h-28 resize-y"
       />
       <Help id={id} error={p.error} hint={p.hint} />
     </div>
@@ -150,9 +153,9 @@ export function ConsentField({ checked, onChange, error }: { checked: boolean; o
           aria-required
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `${id}-error` : undefined}
-          className="mt-1 size-5 shrink-0 cursor-pointer rounded accent-brand"
+          className="mt-0.5 size-5 shrink-0 cursor-pointer rounded accent-brand"
         />
-        <label htmlFor={id} className="cursor-pointer text-sm leading-relaxed text-muted">
+        <label htmlFor={id} className="min-w-0 flex-1 cursor-pointer text-sm leading-relaxed text-muted">
           {CONSENT_TEXT.replace(" in the Privacy Policy.", "")} in the{" "}
           <Link href="/privacy-policy" className="font-medium text-brand underline underline-offset-2" target="_blank">
             Privacy Policy

@@ -9,6 +9,7 @@ export type FormType = (typeof FORM_TYPES)[number];
 export const USER_TYPES = ["Student", "College Representative", "Working Professional", "Parent", "Other"] as const;
 
 export const INTEREST_AREAS = [
+  "Career Consultation Bootcamp",
   "Live Classes with Real Scenarios",
   "Industry Expert Connect",
   "Global Career Coaching",

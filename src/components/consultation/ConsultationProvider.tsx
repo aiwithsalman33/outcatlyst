@@ -4,7 +4,8 @@ import { createContext, useCallback, useContext, useEffect, useId, useRef, useSt
 import { usePathname } from "next/navigation";
 import { ConsultationForm } from "@/components/forms/ConsultationForm";
 
-type OpenOptions = { source?: string; interest?: string; trigger?: HTMLElement | null };
+/** `program` marks the request as interest in a specific program (a registration enquiry, not a booking). */
+type OpenOptions = { source?: string; interest?: string; program?: string; trigger?: HTMLElement | null };
 type Ctx = { open: (opts?: OpenOptions) => void };
 
 const ConsultationContext = createContext<Ctx | null>(null);
@@ -41,6 +42,9 @@ export function ConsultationProvider({ children }: { children: ReactNode }) {
   const formApi = useRef<{ reset: () => void; isSuccess: boolean } | null>(null);
   const [source, setSource] = useState("Website");
   const [interest, setInterest] = useState<string | undefined>();
+  const [program, setProgram] = useState<string | undefined>();
+  // Changes on every open so the form re-applies the preset even when it's the same as last time.
+  const [openId, setOpenId] = useState(0);
   const pathname = usePathname();
   const titleId = useId();
   const descId = useId();
@@ -53,6 +57,8 @@ export function ConsultationProvider({ children }: { children: ReactNode }) {
     returnFocusRef.current = opts.trigger ?? (document.activeElement as HTMLElement | null);
     setSource(opts.source ?? "Website");
     setInterest(opts.interest);
+    setProgram(opts.program);
+    setOpenId((n) => n + 1);
     safeSession.set(SESSION_KEY, "1");
     dialog.showModal();
     document.body.classList.add("scroll-locked");
@@ -96,7 +102,7 @@ export function ConsultationProvider({ children }: { children: ReactNode }) {
       {children}
       <dialog
         ref={dialogRef}
-        className="consult-dialog m-auto max-h-[calc(100dvh-1.5rem)] w-[calc(100%-1.5rem)] max-w-2xl overflow-y-auto overscroll-contain rounded-3xl bg-white p-0 text-ink shadow-2xl"
+        className="consult-dialog m-auto w-[calc(100%-1.5rem)] max-w-3xl overflow-hidden rounded-3xl bg-white p-0 text-ink shadow-2xl sm:w-[calc(100%-3rem)]"
         aria-labelledby={titleId}
         aria-describedby={descId}
         onClose={handleClose}
@@ -105,21 +111,23 @@ export function ConsultationProvider({ children }: { children: ReactNode }) {
           if (e.target === e.currentTarget) close();
         }}
       >
-        <div className="relative">
-          <div className="relative overflow-hidden bg-brand-deep px-6 pt-8 pb-7 text-white sm:px-10 sm:pt-10">
+        {/* Header stays put; only the form body scrolls, so the close button is always reachable. */}
+        <div className="flex max-h-[calc(100dvh-1.5rem)] flex-col sm:max-h-[calc(100dvh-3rem)]">
+          <div className="relative shrink-0 overflow-hidden bg-brand-deep px-6 pt-7 pb-6 text-white sm:px-10 sm:pt-8 sm:pb-7">
             <BrandShards />
-            <p className="eyebrow eyebrow-light">Book a consultation</p>
-            <h2 id={titleId} className="mt-3 max-w-md text-2xl font-bold text-white sm:text-3xl">
-              Let&apos;s Build Your Career Roadmap.
+            <p className="eyebrow eyebrow-light">{program ? "Register your interest" : "Book a consultation"}</p>
+            <h2 id={titleId} className="mt-2.5 max-w-md pr-12 text-2xl font-bold text-white sm:text-[1.75rem]">
+              {program ?? "Let’s Build Your Career Roadmap."}
             </h2>
-            <p id={descId} className="mt-3 max-w-lg text-[0.95rem] leading-relaxed text-white/80">
-              Tell us a little about yourself. Our team can connect with you to discuss the right learning or
-              career-development opportunities.
+            <p id={descId} className="relative mt-2.5 max-w-xl text-[0.95rem] leading-relaxed text-white/80">
+              {program
+                ? "Share your details and goals. This is an enquiry, not a confirmed booking — our team will contact you to confirm availability, session details and payment instructions."
+                : "Tell us a little about yourself. Our team can connect with you to discuss the right learning or career-development opportunities."}
             </p>
             <button
               type="button"
               onClick={close}
-              className="absolute top-4 right-4 grid size-11 cursor-pointer place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+              className="absolute top-4 right-4 z-10 grid size-11 cursor-pointer place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
               aria-label="Close consultation form"
             >
               <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
@@ -127,8 +135,16 @@ export function ConsultationProvider({ children }: { children: ReactNode }) {
               </svg>
             </button>
           </div>
-          <div className="px-6 py-7 sm:px-10 sm:py-8">
-            <ConsultationForm compact leadSource={source} presetInterest={interest} onReady={onFormReady} onClose={close} />
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-6 sm:px-10 sm:py-8">
+            <ConsultationForm
+              compact
+              leadSource={source}
+              presetInterest={interest}
+              program={program}
+              presetKey={openId}
+              onReady={onFormReady}
+              onClose={close}
+            />
             <p className="mt-6 border-t border-line pt-4 text-xs leading-relaxed text-muted">
               <strong className="font-semibold text-ink">Your privacy:</strong> we use these details only to respond to
               your request and never sell them. See our{" "}

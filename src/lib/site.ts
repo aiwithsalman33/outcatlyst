@@ -8,16 +8,25 @@ export const site = {
     "OunCatalyst doesn't just prepare students for jobs; we empower them to build careers of their own.",
   description:
     "OunCatalyst is an EdTech startup helping students become independent, career-ready individuals through practical learning, industry exposure, mentorship and career-development programs.",
-  /** Public contact details are configured through env vars and hidden when empty. */
+  /** Official public contact details. Env vars can override them per deployment. */
   contact: {
-    email: clean(process.env.NEXT_PUBLIC_CONTACT_EMAIL),
-    phone: clean(process.env.NEXT_PUBLIC_CONTACT_PHONE),
+    email: clean(process.env.NEXT_PUBLIC_CONTACT_EMAIL) || "Ouncatalyst@gmail.com",
+    phone: clean(process.env.NEXT_PUBLIC_CONTACT_PHONE) || "+91 86104 18890",
+    location: "Chennai, Tamil Nadu, India",
   },
   social: [
-    { label: "LinkedIn", href: clean(process.env.NEXT_PUBLIC_SOCIAL_LINKEDIN) },
-    { label: "Instagram", href: clean(process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM) },
-    { label: "YouTube", href: clean(process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE) },
-    { label: "X", href: clean(process.env.NEXT_PUBLIC_SOCIAL_X) },
+    {
+      label: "Instagram",
+      handle: "OunCatalyst on Instagram",
+      href: clean(process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM) || "https://www.instagram.com/ouncatalyst?vrfl=MXJ1ajVrNjAxejFuag==",
+    },
+    {
+      label: "LinkedIn",
+      handle: "OunCatalyst on LinkedIn",
+      href: clean(process.env.NEXT_PUBLIC_SOCIAL_LINKEDIN) || "https://www.linkedin.com/company/oun-catalyst/",
+    },
+    { label: "YouTube", handle: "OunCatalyst on YouTube", href: clean(process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE) },
+    { label: "X", handle: "OunCatalyst on X", href: clean(process.env.NEXT_PUBLIC_SOCIAL_X) },
   ].filter((s) => s.href.startsWith("https://")),
 } as const;
 
@@ -25,6 +34,7 @@ export type NavLink = { label: string; href: string; description?: string };
 
 export const programNav: NavLink[] = [
   { label: "All Programs", href: "/programs", description: "Five ways to build practical, career-ready skills" },
+  { label: "Career Consultation Bootcamp", href: "/programs#bootcamp", description: "Weekly guided career consultation sessions" },
   { label: "Industry Connect", href: "/industry-connect", description: "Learn from experienced professionals" },
   { label: "Global Career Coaching", href: "/global-career-coaching", description: "Guidance for international career goals" },
   { label: "Experiential Learning", href: "/experiential-learning", description: "The Years Exchange and real-world exposure" },
@@ -39,9 +49,13 @@ export const primaryNav: (NavLink & { children?: NavLink[] })[] = [
   { label: "Contact", href: "/contact" },
 ];
 
+/** Formats a display phone number as a tel: link. */
+export const telHref = (phone: string) => `tel:${phone.replace(/[^+\d]/g, "")}`;
+
 export const footerNav = {
   programs: [
     { label: "All Programs", href: "/programs" },
+    { label: "Career Consultation Bootcamp", href: "/programs#bootcamp" },
     { label: "Live Classes", href: "/programs#live-classes" },
     { label: "Industry Connect", href: "/industry-connect" },
     { label: "Global Career Coaching", href: "/global-career-coaching" },

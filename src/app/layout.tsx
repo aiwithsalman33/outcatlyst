@@ -39,6 +39,8 @@ const organizationJsonLd = {
   description: site.description,
   slogan: site.tagline,
   ...(site.contact.email ? { email: site.contact.email } : {}),
+  ...(site.contact.phone ? { telephone: site.contact.phone } : {}),
+  address: { "@type": "PostalAddress", addressLocality: "Chennai", addressRegion: "Tamil Nadu", addressCountry: "IN" },
   ...(site.social.length ? { sameAs: site.social.map((s) => s.href) } : {}),
 };
 

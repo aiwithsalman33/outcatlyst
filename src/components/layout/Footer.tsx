@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { footerNav, site } from "@/lib/site";
+import { footerNav, site, telHref } from "@/lib/site";
+import { Icon } from "@/components/ui/Icon";
+import { InstagramIcon, LinkedInIcon } from "@/components/ui/BrandIcons";
 import { Logo } from "./Logo";
 import { CurrentYear } from "./CurrentYear";
 
@@ -21,11 +23,11 @@ function Column({ title, links }: { title: string; links: { label: string; href:
 }
 
 export function Footer() {
-  const { email, phone } = site.contact;
+  const { email, phone, location } = site.contact;
   return (
     <footer className="border-t border-line bg-white">
       <div className="container-site grid gap-12 py-16 lg:grid-cols-12 lg:py-20">
-        <div className="lg:col-span-4">
+        <div className="lg:col-span-3">
           <Logo className="h-10 w-auto" />
           <p className="mt-5 max-w-sm text-[0.95rem] leading-relaxed text-muted">
             OunCatalyst helps students become independent, career-ready individuals through practical learning, industry
@@ -34,28 +36,51 @@ export function Footer() {
           <p className="mt-5 text-sm font-semibold text-navy">Don&apos;t just find a career. Build your own.</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-10 sm:grid-cols-4 lg:col-span-8">
+        <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 lg:col-span-9 lg:grid-cols-[1fr_1fr_1fr_1.35fr] lg:gap-8">
           <Column title="Programs" links={footerNav.programs} />
           <Column title="Students" links={footerNav.students} />
           <Column title="Colleges" links={footerNav.colleges} />
-          <div>
+          <div className="col-span-2 sm:col-span-3 lg:col-span-1">
             <h2 className="text-sm font-semibold tracking-wide text-ink">Contact</h2>
             <ul className="mt-4 space-y-3 text-[0.925rem] text-muted">
-              {email ? (
-                <li><a className="break-all transition hover:text-brand" href={`mailto:${email}`}>{email}</a></li>
-              ) : null}
-              {phone ? (
-                <li><a className="transition hover:text-brand" href={`tel:${phone.replace(/[^+\d]/g, "")}`}>{phone}</a></li>
-              ) : null}
+              <li>
+                <a className="flex items-start gap-2.5 transition hover:text-brand" href={telHref(phone)}>
+                  <Icon name="phone" className="mt-1 size-4 shrink-0" />
+                  {phone}
+                </a>
+              </li>
+              <li>
+                <a className="flex items-start gap-2.5 break-all transition hover:text-brand" href={`mailto:${email}`}>
+                  <Icon name="mail" className="mt-1 size-4 shrink-0" />
+                  {email}
+                </a>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <Icon name="pin" className="mt-1 size-4 shrink-0" />
+                {location}
+              </li>
               <li><Link className="transition hover:text-brand" href="/contact">Send us a message</Link></li>
-              {site.social.map((s) => (
-                <li key={s.label}>
-                  <a className="transition hover:text-brand" href={s.href} target="_blank" rel="noopener noreferrer">
-                    {s.label}<span className="sr-only"> (opens in a new tab)</span>
-                  </a>
-                </li>
-              ))}
             </ul>
+            {site.social.length ? (
+              <ul className="mt-5 flex gap-2.5" aria-label="OunCatalyst on social media">
+                {site.social.map((s) => {
+                  const BrandIcon = s.label === "Instagram" ? InstagramIcon : s.label === "LinkedIn" ? LinkedInIcon : null;
+                  return (
+                    <li key={s.label}>
+                      <a
+                        className="grid size-10 place-items-center rounded-full border border-line text-navy transition hover:-translate-y-0.5 hover:border-brand hover:text-brand"
+                        href={s.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${s.handle} (opens in a new tab)`}
+                      >
+                        {BrandIcon ? <BrandIcon className="size-[1.125rem]" /> : <span className="text-xs font-semibold">{s.label}</span>}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null}
           </div>
         </div>
       </div>

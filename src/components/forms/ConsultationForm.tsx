@@ -8,23 +8,28 @@ import { todayLocalISO, useLeadForm } from "./useLeadForm";
 type Props = {
   leadSource: string;
   presetInterest?: string;
+  /** Program title when registering interest in a specific program; adjusts copy and always applies the preset. */
+  program?: string;
+  /** Changes each time the modal opens, so the preset is re-applied on every open. */
+  presetKey?: number;
   /** Called with the reset function so a parent (e.g. the modal) can clear a finished form. */
   onReady?: (api: { reset: () => void; isSuccess: boolean }) => void;
   onClose?: () => void;
   compact?: boolean;
 };
 
-export function ConsultationForm({ leadSource, presetInterest, onReady, onClose, compact }: Props) {
+export function ConsultationForm({ leadSource, presetInterest, program, presetKey, onReady, onClose, compact }: Props) {
   const f = useLeadForm("consultation", { leadSource });
   const formRef = useRef<HTMLFormElement>(null);
   const { setValues, values, status } = f;
 
-  // Pre-select the interest from the CTA that opened the form, without overwriting a user choice.
+  // Pre-select the interest from the CTA that opened the form. A general CTA never overwrites a
+  // user's choice; a program CTA does, since it's the visitor's latest explicit intent. Other
+  // fields are always left as the visitor typed them.
   useEffect(() => {
-    if (presetInterest && !values.interest && (INTEREST_AREAS as readonly string[]).includes(presetInterest)) {
-      setValues((v) => ({ ...v, interest: presetInterest }));
-    }
-  }, [presetInterest, values.interest, setValues]);
+    if (!presetInterest || !(INTEREST_AREAS as readonly string[]).includes(presetInterest)) return;
+    setValues((v) => (program || !v.interest ? { ...v, interest: presetInterest } : v));
+  }, [presetInterest, program, presetKey, setValues]);
 
   useEffect(() => {
     onReady?.({ reset: f.reset, isSuccess: status === "success" });
@@ -33,10 +38,17 @@ export function ConsultationForm({ leadSource, presetInterest, onReady, onClose,
   if (status === "success") {
     return (
       <FormSuccess title="Thank You! Your Journey Starts Here." reference={f.reference}>
-        <p>
-          We&apos;ve received your consultation request. A member of the OunCatalyst team will review it and contact you
-          using the details you shared.
-        </p>
+        {program ? (
+          <p>
+            We&apos;ve received your interest in the {program}. Your place isn&apos;t confirmed yet — the OunCatalyst team
+            will contact you to confirm availability, session details and payment instructions.
+          </p>
+        ) : (
+          <p>
+            We&apos;ve received your consultation request. A member of the OunCatalyst team will review it and contact you
+            using the details you shared.
+          </p>
+        )}
         {onClose ? (
           <button type="button" className="btn-primary mt-6" onClick={onClose}>
             Close
@@ -51,7 +63,9 @@ export function ConsultationForm({ leadSource, presetInterest, onReady, onClose,
   }
 
   const busy = status === "submitting";
-  const grid = compact ? "grid gap-4 sm:grid-cols-2" : "grid gap-5 sm:grid-cols-2";
+  // Two columns from md up: below that, labels such as "College / Organization (optional)" wrap
+  // and push inputs in neighbouring columns out of line.
+  const grid = compact ? "grid gap-x-5 gap-y-4 md:grid-cols-2" : "grid gap-x-5 gap-y-5 md:grid-cols-2";
 
   return (
     <form
@@ -72,9 +86,16 @@ export function ConsultationForm({ leadSource, presetInterest, onReady, onClose,
         <SelectField name="userType" label="I am a" required options={USER_TYPES} value={values.userType} onChange={f.set("userType")} error={f.errors.userType} />
         <TextField name="organization" label="College / Organization" autoComplete="organization" value={values.organization} onChange={f.set("organization")} error={f.errors.organization} />
         <SelectField name="interest" label="Area of Interest" required options={INTEREST_AREAS} value={values.interest} onChange={f.set("interest")} error={f.errors.interest} />
-        <DateField value={values.preferredDate} onChange={f.set("preferredDate")} error={f.errors.preferredDate} />
+        <DateField
+          className="md:col-span-2"
+          inputClassName="md:w-[calc(50%-0.625rem)]"
+          label={program ? "Preferred Session Date" : undefined}
+          value={values.preferredDate}
+          onChange={f.set("preferredDate")}
+          error={f.errors.preferredDate}
+        />
         <TextAreaField
-          className="sm:col-span-2"
+          className="md:col-span-2"
           name="message"
           label="Message"
           rows={compact ? 3 : 4}
@@ -92,11 +113,11 @@ export function ConsultationForm({ leadSource, presetInterest, onReady, onClose,
         <FormAlert message={f.serverError} onRetry={() => f.submit(formRef.current)} busy={busy} />
       ) : null}
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <button type="submit" className="btn-primary w-full sm:w-auto" disabled={busy}>
-          {busy ? (<><Spinner /> Sending…</>) : "Request My Consultation"}
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-6">
+        <button type="submit" className="btn-primary w-full md:w-auto" disabled={busy}>
+          {busy ? (<><Spinner /> Sending…</>) : program ? "Register My Interest" : "Request My Consultation"}
         </button>
-        <p className="text-xs text-muted sm:max-w-[16rem] sm:text-right">
+        <p className="text-center text-xs leading-relaxed text-muted md:max-w-xs md:text-right">
           We use your details only to respond to this request. No spam.
         </p>
       </div>
@@ -105,9 +126,13 @@ export function ConsultationForm({ leadSource, presetInterest, onReady, onClose,
   );
 }
 
-export function DateField({ value, onChange, error, label = "Preferred Consultation Date" }: { value: string; onChange: (v: string) => void; error?: string; label?: string }) {
+type DateFieldProps = { value: string; onChange: (v: string) => void; error?: string; label?: string; className?: string; inputClassName?: string };
+
+export function DateField({ value, onChange, error, label = "Preferred Consultation Date", className, inputClassName }: DateFieldProps) {
   return (
     <TextField
+      className={className}
+      inputClassName={inputClassName}
       name="preferredDate"
       label={label}
       type="date"
